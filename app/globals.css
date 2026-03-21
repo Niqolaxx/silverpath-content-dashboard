@@ -1,0 +1,292 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap');
+
+:root {
+  --background: #0a0a0f;
+  --card-bg: rgba(26, 26, 46, 0.6);
+  --border-color: rgba(255, 255, 255, 0.1);
+  --accent-primary: #3d3d8f;
+  --accent-secondary: #00796b;
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --glass-blur: blur(12px);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--background);
+  background: radial-gradient(circle at 50% 50%, #1a1a2e 0%, #0a0a0f 100%);
+  color: var(--text-primary);
+  font-family: 'Outfit', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+.glass-card {
+  background: var(--card-bg);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+.dashboard-container {
+  display: flex;
+  min-height: 100vh;
+}
+
+.sidebar {
+  width: 320px;
+  min-width: 320px;
+  height: 100vh;
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 50;
+  padding: 40px 24px;
+  border-right: 1px solid var(--border-color);
+  background: rgba(10, 10, 15, 0.95);
+  backdrop-filter: blur(24px);
+  display: flex;
+  flex-direction: column;
+}
+
+.main-content {
+  margin-left: 320px;
+  padding: 60px;
+  flex: 1;
+  width: calc(100% - 320px);
+}
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 48px;
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 32px;
+  align-items: start;
+}
+
+@media (max-width: 1200px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.glass-card {
+  background: var(--card-bg);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  padding: 32px;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3)
+}
+
+.input-group {
+  margin-bottom: 24px;
+}
+
+.input-label {
+  display: block;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  margin-bottom: 8px;
+}
+
+.text-input, .text-area {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 14px;
+  color: white;
+  font-family: inherit;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.text-input:focus, .text-area:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.workflow-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  border-radius: 14px;
+  border: 1px solid var(--border-color);
+  margin-bottom: 12px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.workflow-item.active {
+  background: rgba(61, 61, 143, 0.15);
+  border-color: rgba(61, 61, 143, 0.5);
+  transform: scale(1.02);
+}
+
+.workflow-item.completed {
+  opacity: 0.6;
+}
+
+.markdown-content {
+  line-height: 1.8;
+  font-size: 15px;
+  color: var(--text-primary);
+}
+
+.markdown-content h1 { font-size: 32px; margin-bottom: 24px; border-bottom: 4px solid var(--accent-primary); padding-bottom: 8px; width: fit-content; }
+.markdown-content h2 { font-size: 24px; margin: 32px 0 16px 0; color: white; }
+.markdown-content h3 { font-size: 18px; margin: 24px 0 12px 0; color: white; }
+.markdown-content p { margin-bottom: 20px; color: var(--text-secondary); }
+.markdown-content strong { color: white; font-weight: 600; }
+.markdown-content ul, .markdown-content ol { margin-left: 20px; margin-bottom: 20px; color: var(--text-secondary); }
+.markdown-content li { margin-bottom: 8px; }
+.markdown-content blockquote { border-left: 4px solid var(--accent-primary); padding-left: 20px; font-style: italic; color: var(--text-secondary); margin: 32px 0; }
+
+.history-item:hover {
+  background: rgba(255, 255, 255, 0.05) !important;
+  color: white !important;
+}
+
+.tab-button.active {
+  background: var(--accent-primary) !important;
+  color: white !important;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+.tab-button:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: white !important;
+}
+
+@media print {
+  @page {
+    margin: 2cm;
+  }
+
+  /* Hide everything we don't need */
+  .sidebar,
+  .dashboard-header,
+  .no-print,
+  .tab-button,
+  .btn-primary,
+  .workflow-item {
+    display: none !important;
+    height: 0 !important;
+    overflow: hidden !important;
+  }
+
+  /* Reset page background */
+  body, html {
+    background: white !important;
+    color: black !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  /* Flatten the flex container */
+  .dashboard-container {
+    display: block !important;
+  }
+
+  /* Remove sidebar offset & padding */
+  .main-content {
+    margin-left: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    display: block !important;
+  }
+
+  /* Flatten the grid */
+  .dashboard-grid {
+    display: block !important;
+  }
+
+  /* Strip glass card chrome */
+  .glass-card {
+    border: none !important;
+    background: white !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+    min-height: 0 !important;
+    display: block !important;
+  }
+
+  /* Make content readable */
+  .markdown-content,
+  .markdown-content * {
+    color: black !important;
+    background: white !important;
+  }
+  .markdown-content {
+    font-size: 12pt !important;
+  }
+  .markdown-content h1 {
+    border-bottom-color: black !important;
+  }
+}
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .sidebar {
+    width: 100%;
+    height: auto;
+    position: relative;
+    padding: 24px;
+    border-right: none;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .main-content {
+    margin-left: 0;
+    padding: 24px;
+  }
+
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .dashboard-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+
+  .dashboard-header h2 {
+    font-size: 24px;
+  }
+}
+
+@media (max-width: 640px) {
+  .glass-card {
+    padding: 24px;
+  }
+
+  .btn-primary {
+    padding: 12px 20px;
+    font-size: 13px;
+  }
+
+  .markdown-content h1 {
+    font-size: 26px;
+  }
+}
