@@ -64,6 +64,10 @@ export default function Dashboard() {
           .eq('user_email', session.user.email)
           .order('created_at', { ascending: false });
 
+        if (error) {
+          console.error("Supabase Fetch Error:", error.message, error.details);
+        }
+
         if (data) {
           cloudHistory = data.map(p => ({
             id: p.id,
@@ -181,6 +185,11 @@ export default function Dashboard() {
             user_email: session.user.email
           }])
           .select();
+
+        if (dbError) {
+          console.error("Supabase Save Error:", dbError.message, dbError.details);
+          throw new Error(`Failed to save to cloud: ${dbError.message}`);
+        }
 
         if (dbData && dbData[0]) {
           const newEntry = {
