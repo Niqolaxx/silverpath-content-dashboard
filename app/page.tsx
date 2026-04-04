@@ -461,7 +461,7 @@ export default function Dashboard() {
 
               <button 
                 onClick={startGeneration}
-                disabled={isGenerating || (sourceType === "manual" ? !topic : !youtubeUrl) || !scenario}
+                disabled={isGenerating || (sourceType === "manual" ? !topic : !youtubeUrl)}
                 className="btn-primary"
                 style={{ width: '100%', padding: '16px', marginTop: '12px' }}
               >

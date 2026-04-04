@@ -28,26 +28,31 @@ async function withRetry<T>(fn: () => Promise<T>, maxRetries = 3): Promise<T> {
 
 export async function POST(req: NextRequest) {
   try {
-    const { step, topic, category, scenario, previousOutput, transcript } = await req.json();
+    const { step, topic, category, scenario, previousOutput, transcript, sourceType } = await req.json();
     
     console.log(`[API] Step ${step} triggered.`);
     if (!process.env.ANTHROPIC_API_KEY) console.error("[API] ANTHROPIC_API_KEY is missing!");
     else console.log(`[API] Anthropic key present (length: ${process.env.ANTHROPIC_API_KEY.length})`);
 
-    if (!topic || !scenario) {
-      return NextResponse.json({ error: "Topic and scenario are required." }, { status: 400 });
+    if (!topic) {
+      if (sourceType === "manual") {
+        return NextResponse.json({ error: "Topic is required." }, { status: 400 });
+      }
+      // For YouTube, topic might be extracted from title later, but we need something.
     }
+
+    const finalScenario = scenario?.trim() || "[AUTO-SELECT: Research and select a realistic UK SME scenario that perfectly fits this topic. Name a specific business type and UK location (e.g., '12-person dental practice in Birmingham'). Use this scenario consistently for the entire content pack.]";
 
     // Agent logic based on the 7-step workflow
     switch (step) {
       case 1: // Research (Gemini)
-        return await handleResearch(topic, category, scenario, transcript);
+        return await handleResearch(topic, category, finalScenario, transcript);
       case 2: // Brief (Claude)
-        return await handleBrief(topic, category, scenario, previousOutput, transcript);
+        return await handleBrief(topic, category, finalScenario, previousOutput, transcript);
       case 3: // Draft (Claude)
-        return await handleDraft(topic, category, scenario, previousOutput, transcript);
+        return await handleDraft(topic, category, finalScenario, previousOutput, transcript);
       case 4: // Polish (Gemini)
-        return await handlePolish(topic, category, scenario, previousOutput);
+        return await handlePolish(topic, category, finalScenario, previousOutput);
       case 5: // SEO (Gemini)
         return await handleSEO(topic, category, previousOutput);
       case 6: // Social (Claude)
