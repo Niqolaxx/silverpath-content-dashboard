@@ -18,7 +18,6 @@ import {
 import ReactMarkdown from "react-markdown";
 import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { supabase } from "../lib/supabase";
 
 export default function Dashboard() {
   const { data: session, status } = useSession();
@@ -55,44 +54,26 @@ export default function Dashboard() {
 
   useEffect(() => {
     const fetchHistory = async () => {
-      // 1. Fetch from Supabase
-      let cloudHistory: any[] = [];
-      if (status === "authenticated" && session?.user?.email) {
-        const { data, error } = await supabase
-          .from('projects')
-          .select('*')
-          .eq('user_email', session.user.email)
-          .order('created_at', { ascending: false });
-
-        if (error) {
-          console.error("Supabase Fetch Error:", error.message, error.details);
-        }
-
-        if (data) {
-          cloudHistory = data.map(p => ({
-            id: p.id,
-            topic: p.topic,
-            category: p.category,
-            scenario: p.scenario,
-            date: new Date(p.created_at).toLocaleDateString(),
-            results: p.results,
-            isCloud: true
-          }));
-        }
+      if (status !== "authenticated") return;
+      try {
+        const res = await fetch("/api/projects");
+        if (!res.ok) throw new Error("Failed to load projects");
+        const { projects } = await res.json();
+        const mapped = projects.map((p: any) => ({
+          id: p.id,
+          topic: p.topic,
+          category: p.category,
+          scenario: p.scenario,
+          date: new Date(p.created_at).toLocaleDateString(),
+          results: p.results,
+        }));
+        setHistory(mapped);
+      } catch (err) {
+        console.error("History fetch error:", err);
       }
-
-      // 2. Fetch from LocalStorage (Legacy)
-      const saved = localStorage.getItem("silverpath_history");
-      let localHistory = saved ? JSON.parse(saved) : [];
-      
-      // 3. Merge: Use cloud as primary source, add only unique local entries by ID
-      const cloudIds = new Set(cloudHistory.map((c: any) => c.id));
-      const uniqueLocal = localHistory.filter((l: any) => !cloudIds.has(l.id));
-      const merged = [...cloudHistory, ...uniqueLocal];
-      setHistory(merged);
     };
     fetchHistory();
-  }, [status, session]);
+  }, [status]);
 
   // Show loading while checking auth
   if (status === "loading") {
@@ -169,45 +150,33 @@ export default function Dashboard() {
       setIsGenerating(false);
       setStep(workflowSteps.length + 1);
       
-      // Save to Supabase
-      const saveTopic = sourceType === "youtube" ? (results[2]?.split("\n")[0]?.replace(/#/g, '').trim() || topic) : topic;
-      // Wait, let's just use the topic state we updated
-      const finalTopicToSave = topic || "YouTube Repurpose";
+      const saveRes = await fetch("/api/projects", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          topic: sourceType === "youtube" ? (finalTopic || topic) : topic,
+          category,
+          scenario,
+          results: newResults,
+        }),
+      });
 
-      if (session?.user?.email) {
-        const { data: dbData, error: dbError } = await supabase
-          .from('projects')
-          .insert([{
-            topic: sourceType === "youtube" ? (finalTopic || topic) : topic,
-            category,
-            scenario,
-            results: newResults,
-            user_email: session.user.email
-          }])
-          .select();
-
-        if (dbError) {
-          console.error("Supabase Save Error:", dbError.message, dbError.details);
-          throw new Error(`Failed to save to cloud: ${dbError.message}`);
-        }
-
-        if (dbData && dbData[0]) {
-          const newEntry = {
-            id: dbData[0].id,
-            topic: sourceType === "youtube" ? (finalTopic || topic) : topic,
-            category,
-            scenario,
-            date: new Date().toLocaleDateString(),
-            results: newResults
-          };
-          setHistory([newEntry, ...history]);
-        }
+      if (!saveRes.ok) {
+        const saveErr = await saveRes.json();
+        console.error("Save Error:", saveErr);
+        throw new Error(`Failed to save project: ${saveErr.error}`);
       }
-      
-      localStorage.setItem("silverpath_history", JSON.stringify([
-        { id: Date.now().toString(), topic, category, scenario, date: new Date().toLocaleDateString(), results: newResults },
-        ...history
-      ]));
+
+      const { project: savedProject } = await saveRes.json();
+      const newEntry = {
+        id: savedProject.id,
+        topic: sourceType === "youtube" ? (finalTopic || topic) : topic,
+        category,
+        scenario,
+        date: new Date().toLocaleDateString(),
+        results: newResults,
+      };
+      setHistory([newEntry, ...history]);
       
       setLogs(prev => [{ agent: "System", msg: "Content Pack Finished", time: "DONE" }, ...prev]);
     } catch (err: any) {
@@ -325,7 +294,6 @@ export default function Dashboard() {
               <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.2)', paddingLeft: '4px', fontStyle: 'italic' }}>No activity yet...</p>
             )}
             {logs.map((log, i) => (
-// ... (rest of log mapping)
               <div key={i} className="log-entry">
                 <span className="log-time">{log.time}</span>
                 <div className="log-content">

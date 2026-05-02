@@ -95,28 +95,27 @@ async function handleBrief(topic: string, category: string, scenario: string, re
   const response = await withRetry(() => anthropic.messages.create({
     model: "claude-sonnet-4-6",
     max_tokens: 1000,
-    messages: [{ 
-      role: "user", 
+    messages: [{
+      role: "user",
       content: `Create a content brief for a ${category} ${transcript ? "repurposed from a video" : ""}:
 Topic: ${topic}
 Scenario: ${scenario}
 ${transcript ? `Full Transcript Context: ${transcript.substring(0, 10000)}` : ""}
 Research Docs: ${research}
-Format it as a professional blog outline tailored to the ${category} format.` 
+Format it as a professional blog outline tailored to the ${category} format.`
     }],
   }));
-  // @ts-ignore
-  return NextResponse.json({ output: response.content[0].text, agent: "Claude 4.6" });
+  const text = response.content[0];
+  if (text.type !== "text") throw new Error("Unexpected response type from Claude");
+  return NextResponse.json({ output: text.text, agent: "Claude 4.6" });
 }
 
-// ... other handlers will be implemented similarly ...
-// (Simplified placeholders for high-speed drafting)
 async function handleDraft(topic: string, category: string, scenario: string, brief: string, transcript?: string) {
   const response = await withRetry(() => anthropic.messages.create({
     model: "claude-sonnet-4-6",
     max_tokens: 4000,
-    messages: [{ 
-      role: "user", 
+    messages: [{
+      role: "user",
       content: transcript
         ? `Draft a 1,500-word ${category} repurposed from this YouTube Transcript:
            Transcript (excerpt): ${transcript.substring(0, 15000)}
@@ -125,19 +124,20 @@ async function handleDraft(topic: string, category: string, scenario: string, br
         : (category === "Technical Breakdown"
           ? `Draft a deep-dive technical breakdown/how-to for: ${topic}.
              Source Details: ${scenario}.
-             Structure: 
+             Structure:
              1. The Business Burden (The Problem)
              2. The Digital Blueprint (The Solution)
              3. The Build Logs (Step-by-step logic nodes, e.g. n8n setup)
              4. Post-Build Performance.
              Follow this brief: ${brief}`
-          : `Draft a 1,500-word ${category} for: ${topic}. 
-             SME Audience: ${scenario}. 
+          : `Draft a 1,500-word ${category} for: ${topic}.
+             SME Audience: ${scenario}.
              Follow this brief: ${brief}`)
     }],
   }));
-  // @ts-ignore
-  return NextResponse.json({ output: response.content[0].text, agent: "Claude 4.6" });
+  const text = response.content[0];
+  if (text.type !== "text") throw new Error("Unexpected response type from Claude");
+  return NextResponse.json({ output: text.text, agent: "Claude 4.6" });
 }
 
 async function handlePolish(topic: string, category: string, scenario: string, draft: string) {
@@ -162,28 +162,30 @@ async function handleSocial(topic: string, category: string, content: string) {
   const response = await withRetry(() => anthropic.messages.create({
     model: "claude-sonnet-4-6",
     max_tokens: 2000,
-    messages: [{ 
-      role: "user", 
+    messages: [{
+      role: "user",
       content: `Create a social media pack (LinkedIn, Twitter, FB) for this ${category}:
 Article: ${content}
-Tone: Professional and thought-provoking for SMEs.` 
+Tone: Professional and thought-provoking for SMEs.`
     }],
   }));
-  // @ts-ignore
-  return NextResponse.json({ output: response.content[0].text, agent: "Claude 4.6" });
+  const text = response.content[0];
+  if (text.type !== "text") throw new Error("Unexpected response type from Claude");
+  return NextResponse.json({ output: text.text, agent: "Claude 4.6" });
 }
 
 async function handleCarousel(topic: string, category: string, content: string) {
   const response = await withRetry(() => anthropic.messages.create({
     model: "claude-sonnet-4-6",
     max_tokens: 2000,
-    messages: [{ 
-      role: "user", 
+    messages: [{
+      role: "user",
       content: `Create a 7-slide LinkedIn Carousel plan for: ${topic}.
 Based on: ${content}
-Format: Optimized for ${category} highlights.` 
+Format: Optimized for ${category} highlights.`
     }],
   }));
-  // @ts-ignore
-  return NextResponse.json({ output: response.content[0].text, agent: "Claude 4.6" });
+  const text = response.content[0];
+  if (text.type !== "text") throw new Error("Unexpected response type from Claude");
+  return NextResponse.json({ output: text.text, agent: "Claude 4.6" });
 }
