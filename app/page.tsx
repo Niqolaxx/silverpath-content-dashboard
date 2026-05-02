@@ -162,9 +162,9 @@ export default function Dashboard() {
       });
 
       if (!saveRes.ok) {
-        const saveErr = await saveRes.json();
-        console.error("Save Error:", saveErr);
-        throw new Error(`Failed to save project: ${saveErr.error}`);
+        const saveErr = await saveRes.json().catch(() => ({ error: "non-JSON response" }));
+        console.error("Save Error:", saveRes.status, saveErr);
+        throw new Error(`Save failed (HTTP ${saveRes.status}): ${saveErr.error}`);
       }
 
       const { project: savedProject } = await saveRes.json();
@@ -237,7 +237,7 @@ export default function Dashboard() {
           <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'var(--accent-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <Sparkles style={{ color: 'white', width: '20px', height: '20px' }} />
           </div>
-          <h1 style={{ fontSize: '20px', fontWeight: '700' }}>Silverpath.ai</h1>
+          <h1 style={{ fontSize: '20px', fontWeight: '700' }}>Silverpath.ai <span style={{ fontSize: '10px', opacity: 0.4, fontWeight: '400' }}>v2</span></h1>
         </div>
 
         <div style={{ marginBottom: '40px' }}>
